@@ -1,0 +1,13 @@
+pandas
+numpy
+geopandas
+shapely
+pyproj
+pyyaml
+scipy
+scikit-learn
+matplotlib
+plotly
+mapclassify
+jinja2
+requests
