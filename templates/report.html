@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <style>
+    :root { --ink:#1f2933; --muted:#6b7280; --accent:#1e88e5; --line:#e5e7eb; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Microsoft YaHei","PingFang SC",sans-serif; color:var(--ink); background:#f7f8fa; }
+    .page { max-width: 980px; margin: 0 auto; background:#fff; padding: 40px 48px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+    h1 { font-size:26px; margin:0 0 4px; }
+    h2 { font-size:19px; margin:32px 0 12px; padding-bottom:6px; border-bottom:2px solid var(--accent); }
+    .meta { color:var(--muted); font-size:13px; margin-bottom:24px; }
+    .cards { display:flex; gap:16px; flex-wrap:wrap; margin:16px 0; }
+    .card { flex:1 1 160px; border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+    .card .num { font-size:26px; font-weight:700; color:var(--accent); }
+    .card .lbl { color:var(--muted); font-size:13px; margin-top:2px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; margin:12px 0; }
+    th, td { border:1px solid var(--line); padding:7px 10px; text-align:left; }
+    th { background:#f3f4f6; }
+    img { max-width:100%; height:auto; border:1px solid var(--line); border-radius:8px; margin:10px 0; }
+    .concl { background:#f0f7ff; border-left:4px solid var(--accent); padding:14px 18px; border-radius:6px; line-height:1.9; }
+    .concl li { margin:4px 0; }
+    .figure { margin:18px 0; }
+    .figure .cap { color:var(--muted); font-size:13px; margin-top:4px; }
+    @media print { body{background:#fff;} .page{box-shadow:none;padding:20px;} }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>{{ title }}</h1>
+    <div class="meta">生成时间：{{ generated_at }}　|　输入数据：{{ input }}</div>
+
+    <h2>一、数据说明</h2>
+    <p>本报告由「多源地理空间数据自动化分析管线」一键生成，覆盖数据清洗、核密度估计、空间叠加与片区统计全流程。存储坐标统一为 WGS-84，面积、密度与缓冲均在 UTM 投影系下计算。</p>
+
+    <h2>二、清洗中间产物</h2>
+    <div class="cards">
+      <div class="card"><div class="num">{{ clean_report.get('rows_before', 0) }}</div><div class="lbl">清洗前记录数</div></div>
+      <div class="card"><div class="num">{{ clean_report.get('rows_after', 0) }}</div><div class="lbl">清洗后记录数</div></div>
+      <div class="card"><div class="num">{{ clean_report.get('dropped_null_geom', 0) }}</div><div class="lbl">剔除无坐标</div></div>
+      <div class="card"><div class="num">{{ clean_report.get('dropped_duplicates', 0) }}</div><div class="lbl">去重 / 剔除</div></div>
+    </div>
+    {% if clean_table %}
+    <table>
+      <thead><tr><th>类型</th><th>数量</th></tr></thead>
+      <tbody>
+        {% for row in clean_table %}<tr><td>{{ row.type }}</td><td>{{ row.count }}</td></tr>{% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    <h2>三、分析图</h2>
+    {% if images.get('kde_heatmap') %}
+    <div class="figure"><img src="{{ images['kde_heatmap'] }}" alt="核密度热力场"><div class="cap">图1：POI 核密度热力场</div></div>
+    {% endif %}
+    {% if images.get('zone_map') %}
+    <div class="figure"><img src="{{ images['zone_map'] }}" alt="片区主导功能"><div class="cap">图2：片区主导功能识别</div></div>
+    {% endif %}
+    {% if images.get('zone_bar') %}
+    <div class="figure"><img src="{{ images['zone_bar'] }}" alt="各类 POI 数量"><div class="cap">图3：各类 POI 数量分布</div></div>
+    {% endif %}
+    {% if plotly_html %}
+    <div class="figure"><div class="cap">图4：各类 POI 数量（交互）</div>{{ plotly_html | safe }}</div>
+    {% endif %}
+
+    <h2>四、结论</h2>
+    <div class="concl"><ul>
+      {% for c in conclusions %}<li>{{ c }}</li>{% endfor %}
+    </ul></div>
+  </div>
+</body>
+</html>
